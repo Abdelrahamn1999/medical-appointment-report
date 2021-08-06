@@ -1,0 +1,295 @@
+# Medical Appointment 
+## we want to prepare the dataset 
+
+```{r}
+# importing data
+
+df=read.csv('https://d17h27t6h515a5.cloudfront.net/topher/2017/October/59dd2e9a_noshowappointments-kagglev2-may-2016/noshowappointments-kagglev2-may-2016.csv')
+View(df)
+```
+
+## removing row with age < 0 
+
+```{r}
+df= df[df$Age >=0 ,]
+```
+
+# viewing features' name
+```{r}
+names(df)
+
+```
+
+
+#PatientId - Identification of a patient
+#AppointmentID - Identification of each appointment
+#Gender = Male or Female
+#ScheduledDay = The day of the actual appointment
+#AppointmentDay = The day of someone  registered the appointment
+#Age = Age of the patient
+#Neighbourhood = Where the appointment takes place.
+#Scholarship =  True of False
+#Hipertension = True or False
+#Diabetes = True or False
+#Alcoholism = True or False
+#Handicap = True or False
+#SMS_received = Confirm the reservation for the patient by sending a message.
+#No-show = True or False.
+
+
+
+
+#showing the first 5 rows 
+```{r}
+head(df)
+```
+#showing the last 5 rows 
+
+
+```{r cars}
+
+tail(df)
+```
+
+# the dataset shape "(rows , columns)"
+
+
+```{r }
+dim(df)
+```
+
+#shape of the dataset(rows = 110526 , columns = 14)
+
+```{r}
+names(df)[names(df) == 'No.show'] = 'No_show'
+```
+
+#number of duplicated value in rows
+
+
+```{r}
+sum(duplicated(df))
+```
+
+# check missing value
+
+
+
+```{r}
+df %>%
+    summarise_all(
+        funs(sum(is.na(.)))
+    )
+```
+## check structure of the data
+#(information about the features to prepare the dataset for cleaning and analysis)
+```{r}
+str(df)
+```
+
+#cleaning the dataset by changing data type of some columns to be more readable
+  
+
+```{r}
+df.new=df %>%
+  mutate(Gender=as.factor(Gender),
+         ScheduledDay = as.Date(ScheduledDay),
+         AppointmentDay=as.Date(AppointmentDay),
+         Neighbourhood=as.factor(Neighbourhood),
+         Scholarship =as.logical(Scholarship ),
+         Hipertension =as.logical(Hipertension),
+         Diabetes=as.logical(Diabetes),
+         Alcoholism=as.logical(Alcoholism),
+         Handcap =as.logical(Handcap ),
+         SMS_received =as.logical(SMS_received),
+         No_show=as.factor(No_show),
+         Age=as.numeric(Age)
+                  )
+
+
+
+```
+
+
+# checking summary statistics
+
+
+```{r}
+summary(df.new)
+```
+
+
+#The relation between no show and the relationships that may affect it
+```{r}
+df.new %>% 
+  group_by(SMS_received)  %>%
+  count(No_show)
+```
+
+#There is a relationship between the attendance and the sending of the confirmation message as there are many attendees from whom the message was sent, so it was possible to increase the rate to as many as possible. Although there are many attendees to whom the confirmation message has been sent, the no-show rate is much higher than the attendance, and there may be other factors that prevented them from attending
+
+
+
+
+#The difference between Gender in punctuality
+```{r}
+
+df.new %>% 
+  group_by(Gender) %>%
+  count(No_show) 
+ 
+```
+#The results show that the number of females is greater than males and that the average rate between them in attendance is very close
+
+
+
+#The relation between who has Scholarship and  the attendance
+```{r}
+df.new %>% 
+  group_by(Scholarship)  %>%
+  count(No_show)
+
+```
+#Also, the number of attending scholarships is a few for the absentees
+
+
+
+#The difference between males and females in some features
+```{r}
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Scholarship)
+
+```
+#The rate of female scholarship recipients is higher than males
+
+
+```{r}
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(SMS_received)
+
+
+```
+#The rate of receiving the confirmation SMS for females is higher than that of males, yet the attendance rate for both parties is about half of those who receive the SMS.
+
+
+
+#The rate of difference between males and females for each disease 
+```{r}
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Hipertension)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Diabetes)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Alcoholism)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Handcap)
+
+```
+
+
+
+#The rate of the attendance for each disease
+
+```{r}
+df.new %>% 
+  group_by(No_show)  %>%
+  count(Handcap)
+
+df.new %>% 
+  group_by(No_show)  %>%
+  count(Diabetes)
+
+
+df.new %>% 
+  group_by(No_show)  %>%
+  count(Alcoholism)
+
+
+df.new %>% 
+  group_by(No_show)  %>%
+  count(Hipertension)
+
+```
+
+
+#The rate of difference between males and females in receiving the SMS and the attendees 
+```{r}
+df.new %>% 
+  group_by(Gender)  %>%
+  count(SMS_received ,No_show)
+```
+
+
+
+#The rate of difference between males and females for each disease and the attendance rate for each disease
+```{r}
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Diabetes ,No_show)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Hipertension ,No_show)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Alcoholism ,No_show)
+
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Handcap ,No_show)
+```
+
+
+
+
+#The rate of difference between males and females for all disease and the attendance rate for each disease
+```{r}
+df.new %>% 
+  group_by(Gender)  %>%
+  count(Handcap,Diabetes,Hipertension , Alcoholism ,No_show)
+```
+
+
+
+#Knowing the rate of increase of each disease in each neighborhood to increase awareness and attention to each area
+```{r}
+df.new %>% 
+  group_by(Neighbourhood)  %>%
+  count(Diabetes)
+
+df.new %>% 
+  group_by(Neighbourhood)  %>%
+  count( Hipertension)
+
+df.new %>% 
+  group_by(Neighbourhood)  %>%
+  count( Alcoholism)
+
+
+df.new %>% 
+  group_by(Neighbourhood)  %>%
+  count(Handcap)
+```
+
+
+
+#Knowing the rate of all diseases in each neighborhood to increase focus in raising awareness
+```{r}
+df.new %>% 
+  group_by(Neighbourhood)  %>%
+  count(Diabetes ,Handcap , Hipertension , Alcoholism)
+
+```
+
